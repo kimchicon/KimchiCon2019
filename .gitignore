@@ -11,3 +11,6 @@ Flash Dumping/FlashSections/FullFlash.bin
 Flash Dumping/FlashSections/KimchiConLogo.ino.partitions.bin
 Flash Dumping/Memory/0x40000000.bin
 Flash Dumping/Memory/0x40080400.bin
+ELF/Images/KimchiConLogo.ino.partitions.bin
+ELF/Images/KimchiConLogo.ino.bin
+ELF/Images/KimchiConLogo.ino.elf
