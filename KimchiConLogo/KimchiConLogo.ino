@@ -177,6 +177,7 @@ void startWebServer() {
     M5.Lcd.print("Starting Web Server at ");
     Serial.println(WiFi.softAPIP());
     M5.Lcd.println(WiFi.softAPIP());
+    
     webServer.on("/settings", []() {
       String s = "<h1>Wi-Fi Settings</h1><p>Please enter your password by selecting the SSID.</p>";
       s += "<form method=\"get\" action=\"setap\"><label>SSID: </label><select name=\"ssid\">";
@@ -223,6 +224,8 @@ void startWebServer() {
     M5.Lcd.print("Starting Web Server at ");
     Serial.println(WiFi.localIP());
     M5.Lcd.println(WiFi.localIP());
+    M5.Lcd.println("Let's play a game...");
+
     webServer.on("/", []() {
       char buf[1];
       String s = "<h1>STA mode</h1><p><a href=\"/reset\">Reset Wi-Fi Settings</a></p> <p>";
