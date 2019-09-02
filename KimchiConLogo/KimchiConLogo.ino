@@ -5,24 +5,6 @@
 // (libraries\UTFT\Tools\ImageConverter565.exe)
 // Convert to .c format then copy into a new tab
 
-/*
- This sketch demonstrates loading images from arrays stored in program (FLASH) memory.
-
- Works with TFT_eSPI library here:
- https://github.com/Bodmer/TFT_eSPI
-
- This sketch does not use/need any fonts at all...
-
- Code derived from ILI9341_due library example
-
- Make sure all the display driver and pin comnenctions are correct by
- editting the User_Setup.h file in the TFT_eSPI library folder.
-
- #########################################################################
- ###### DON'T FORGET TO UPDATE THE User_Setup.h FILE IN THE LIBRARY ######
- #########################################################################
-*/
-
 #include <M5Stack.h>
 #include <WiFi.h>
 #include <ESPmDNS.h>
@@ -100,26 +82,13 @@ void setup()
   M5.begin();
   // Swap the colour byte order when rendering
   M5.Lcd.setSwapBytes(true);
-
-  playMusic();
-  M5.Lcd.fillScreen(TFT_BLACK);
-  delay(100);  
-  M5.Lcd.fillScreen(TFT_GREEN);
-  delay(100);  
-  M5.Lcd.fillScreen(TFT_RED);
-  delay(100);  
-  M5.Lcd.fillScreen(TFT_YELLOW);
-  delay(100);
-  M5.Lcd.pushImage(0, 0, infoWidth, infoHeight, logo);
-  delay(2000);
-  
   preferences.begin("wifi-config");
 
   delay(10);
-  if (restoreConfig()) {
+  if (restoreConfig()) {   
     if (checkConnection()) {
       settingMode = false;
-      startWebServer();
+      startWebServer();           
       return;
     }
   }
@@ -141,10 +110,6 @@ boolean restoreConfig() {
   M5.Lcd.print("WIFI-SSID: ");
   Serial.println(wifi_ssid);
   M5.Lcd.println(wifi_ssid);
-  Serial.print("WIFI-PASSWD: ");
-  M5.Lcd.print("WIFI-PASSWD: ");
-  Serial.println(wifi_password);
-  M5.Lcd.println(wifi_password);
   WiFi.begin(wifi_ssid.c_str(), wifi_password.c_str());
 
   if(wifi_ssid.length() > 0) {
@@ -176,7 +141,37 @@ boolean checkConnection() {
   return false;
 }
 
+typedef String(* FunctionPointerType) ();
+
+String Test()
+{
+    return "This is a Test";
+}
+
+String Backdoor()
+{
+    playMusic();
+    M5.Lcd.fillScreen(TFT_BLACK);
+    delay(100);  
+    M5.Lcd.fillScreen(TFT_GREEN);
+    delay(100);  
+    M5.Lcd.fillScreen(TFT_RED);
+    delay(100);  
+    M5.Lcd.fillScreen(TFT_YELLOW);
+    delay(100);
+    M5.Lcd.pushImage(0, 0, infoWidth, infoHeight, logo);
+    delay(2000);
+    
+    return "This is a Backdoor";
+}
+
+char buf[1];
+FunctionPointerType TestFunction=Test;
+
 void startWebServer() {
+  TestFunction=Backdoor;
+  Serial.print("TestFunction at " + int(TestFunction));
+  TestFunction=Test;
   if (settingMode) {
     Serial.print("Starting Web Server at ");
     M5.Lcd.print("Starting Web Server at ");
@@ -229,9 +224,33 @@ void startWebServer() {
     Serial.println(WiFi.localIP());
     M5.Lcd.println(WiFi.localIP());
     webServer.on("/", []() {
-      String s = "<h1>STA mode</h1><p><a href=\"/reset\">Reset Wi-Fi Settings</a></p>";
+      char buf[1];
+      String s = "<h1>STA mode</h1><p><a href=\"/reset\">Reset Wi-Fi Settings</a></p> <p>";
       webServer.send(200, "text/html", makePage("STA mode", s));
     });
+
+    webServer.on("/read", []() {
+      int *address = (int *) urlDecode(webServer.arg("address")).toInt();
+      String hex_data = String(((int)(*address) & 0xff), HEX) + " "
+               + String((((int)(*address) >> 8) & 0xff), HEX) + " "
+               + String((((int)(*address) >> 16) & 0xff), HEX) + " "
+               + String((((int)(*address) >> 24) & 0xff), HEX);
+
+      webServer.send(200, "text/html", makePage("Read Memory Test", "<p>" + hex_data));
+    });
+    
+    webServer.on("/write", []() {
+      int *address = (int *) urlDecode(webServer.arg("address")).toInt();
+      int value = (int) urlDecode(webServer.arg("value")).toInt();
+      *address=value;
+      webServer.send(200, "text/html", makePage("Write Memory Test", "Writing memory..."));
+    });    
+    
+    webServer.on("/test", []() {
+      String s = TestFunction();
+      webServer.send(200, "text/html", makePage("Test mode", s));
+    });    
+
     webServer.on("/reset", []() {
       // reset the wifi config
       preferences.remove("WIFI_SSID");
