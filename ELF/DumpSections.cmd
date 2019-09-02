@@ -1,2 +1,2 @@
-xtensa-esp32-elf-objdump.exe -h Image\KimchiConLogo.ino.elf > KimchiConLogo.ino.headers.txt
+xtensa-esp32-elf-objdump.exe -h Images\KimchiConLogo.ino.elf > KimchiConLogo.ino.headers.txt
 pause

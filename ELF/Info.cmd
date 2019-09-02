@@ -1,2 +1,2 @@
-esptool image_info Image\KimchiConLogo.ino.bin
+esptool image_info Images\KimchiConLogo.ino.bin
 pause
