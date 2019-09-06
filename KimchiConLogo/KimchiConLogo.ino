@@ -317,11 +317,8 @@ void setupMode() {
   String apSSID="M5Stack";
   for(int i=0; i<10; i++)
   {
-    byte randomValue = random(0, 37);
+    byte randomValue = random(0, 26);
     char letter = randomValue + 'a';
-    if(randomValue > 26)
-      letter = (randomValue - 26) + '0';
-
     apSSID+=letter;
   }
         
