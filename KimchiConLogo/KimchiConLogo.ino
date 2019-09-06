@@ -1,10 +1,3 @@
-// Icon images are stored in tabs ^ e.g. Alert.h etc above this line
-// more than one icon can be in a header file
-
-// Arrays containing FLASH images can be created with UTFT library tool:
-// (libraries\UTFT\Tools\ImageConverter565.exe)
-// Convert to .c format then copy into a new tab
-
 #include <M5Stack.h>
 #include <WiFi.h>
 #include <ESPmDNS.h>
@@ -42,17 +35,33 @@
 #define NOTE_DH7 112
 
 const IPAddress apIP(192, 168, 4, 1);
-const char* apSSID = "M5STACK_SETUP";
+char *letters = "abcdefghijklmnopqrstuvwxyz0123456789";
 boolean settingMode;
 String ssidList;
 String wifi_ssid;
 String wifi_password;
+
+char Buffer00[10];
+int Buffer01Length=10;
 
 // DNSServer dnsServer;
 WebServer webServer(80);
 
 // wifi config store
 Preferences preferences;
+
+typedef String(* FunctionPointerType) ();
+
+typedef struct
+{
+  FunctionPointerType functionPtr;
+  String name;
+  String description;
+  char buffer[30];
+} FunctionInformation;
+
+FunctionInformation functionInformation;
+char projectName[15];
 
 extern const unsigned char m5stack_startup_music[];
 
@@ -141,8 +150,6 @@ boolean checkConnection() {
   return false;
 }
 
-typedef String(* FunctionPointerType) ();
-
 String Test()
 {
     return "This is a Test";
@@ -165,13 +172,17 @@ String Backdoor()
     return "This is a Backdoor";
 }
 
-char buf[1];
-FunctionPointerType TestFunction=Test;
-
 void startWebServer() {
-  TestFunction=Backdoor;
-  Serial.print("TestFunction at " + int(TestFunction));
-  TestFunction=Test;
+  strcpy(projectName, "KimchiCon");
+
+  functionInformation.functionPtr=Backdoor;
+  Serial.print("Backdoor:" + int(functionInformation.functionPtr));
+
+  functionInformation.functionPtr=Test;
+  Serial.print("Test:" + int(functionInformation.functionPtr));
+  
+  Test();
+  
   if (settingMode) {
     Serial.print("Starting Web Server at ");
     M5.Lcd.print("Starting Web Server at ");
@@ -232,8 +243,13 @@ void startWebServer() {
       webServer.send(200, "text/html", makePage("STA mode", s));
     });
 
+    /*
+     * These are for debugging purposes
+     */
+
+    /*
     webServer.on("/read", []() {
-      int *address = (int *) urlDecode(webServer.arg("address")).toInt();
+      int *address = (int *) strtol(urlDecode(webServer.arg("address")).c_str(), (char **) '\0', 16);
       String hex_data = String(((int)(*address) & 0xff), HEX) + " "
                + String((((int)(*address) >> 8) & 0xff), HEX) + " "
                + String((((int)(*address) >> 16) & 0xff), HEX) + " "
@@ -243,16 +259,28 @@ void startWebServer() {
     });
     
     webServer.on("/write", []() {
-      int *address = (int *) urlDecode(webServer.arg("address")).toInt();
-      int value = (int) urlDecode(webServer.arg("value")).toInt();
+      int *address = (int *) strtol(urlDecode(webServer.arg("address")).c_str(), (char **) '\0', 16);
+      int value = (int) strtol(urlDecode(webServer.arg("value")).c_str(), (char **) '\0', 16);
       *address=value;
       webServer.send(200, "text/html", makePage("Write Memory Test", "Writing memory..."));
-    });    
-    
-    webServer.on("/test", []() {
-      String s = TestFunction();
+    });
+    */
+
+    webServer.on("/setName", []() {
+      const char *name=urlDecode(webServer.arg("name")).c_str();
+      strcpy(projectName, name);
+      webServer.send(200, "text/html", makePage("Test mode", ""));
+    });
+       
+    webServer.on("/getInfo", []() {
+      String s = functionInformation.functionPtr();
       webServer.send(200, "text/html", makePage("Test mode", s));
-    });    
+    });
+
+    webServer.on("/test", []() {
+      String s = Test();
+      webServer.send(200, "text/html", makePage("Test mode", s));
+    });
 
     webServer.on("/reset", []() {
       // reset the wifi config
@@ -284,7 +312,19 @@ void setupMode() {
   }
   delay(100);
   WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-  WiFi.softAP(apSSID);
+
+  String apSSID="M5Stack";
+  for(int i=0; i<10; i++)
+  {
+    byte randomValue = random(0, 37);
+    char letter = randomValue + 'a';
+    if(randomValue > 26)
+      letter = (randomValue - 26) + '0';
+
+    apSSID+=letter;
+  }
+        
+  WiFi.softAP(apSSID.c_str());
   WiFi.mode(WIFI_MODE_AP);
   // WiFi.softAPConfig(IPAddress local_ip, IPAddress gateway, IPAddress subnet);
   // WiFi.softAP(const char* ssid, const char* passphrase = NULL, int channel = 1, int ssid_hidden = 0);
@@ -292,8 +332,8 @@ void setupMode() {
   startWebServer();
   Serial.print("Starting Access Point at \"");
   M5.Lcd.print("Starting Access Point at \"");
-  Serial.print(apSSID);
-  M5.Lcd.print(apSSID);
+  Serial.print(apSSID.c_str());
+  M5.Lcd.print(apSSID.c_str());
   Serial.println("\"");
   M5.Lcd.println("\"");
 }
