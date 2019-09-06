@@ -243,45 +243,6 @@ void startWebServer() {
       webServer.send(200, "text/html", makePage("STA mode", s));
     });
 
-    /*
-     * These are for debugging purposes
-     */
-
-    /*
-    webServer.on("/read", []() {
-      int *address = (int *) strtol(urlDecode(webServer.arg("address")).c_str(), (char **) '\0', 16);
-      String hex_data = String(((int)(*address) & 0xff), HEX) + " "
-               + String((((int)(*address) >> 8) & 0xff), HEX) + " "
-               + String((((int)(*address) >> 16) & 0xff), HEX) + " "
-               + String((((int)(*address) >> 24) & 0xff), HEX);
-
-      webServer.send(200, "text/html", makePage("Read Memory Test", "<p>" + hex_data));
-    });
-    
-    webServer.on("/write", []() {
-      int *address = (int *) strtol(urlDecode(webServer.arg("address")).c_str(), (char **) '\0', 16);
-      int value = (int) strtol(urlDecode(webServer.arg("value")).c_str(), (char **) '\0', 16);
-      *address=value;
-      webServer.send(200, "text/html", makePage("Write Memory Test", "Writing memory..."));
-    });
-    */
-
-    webServer.on("/setName", []() {
-      const char *name=urlDecode(webServer.arg("name")).c_str();
-      strcpy(projectName, name);
-      webServer.send(200, "text/html", makePage("Test mode", ""));
-    });
-       
-    webServer.on("/getInfo", []() {
-      String s = functionInformation.functionPtr();
-      webServer.send(200, "text/html", makePage("Test mode", s));
-    });
-
-    webServer.on("/test", []() {
-      String s = Test();
-      webServer.send(200, "text/html", makePage("Test mode", s));
-    });
-
     webServer.on("/reset", []() {
       // reset the wifi config
       preferences.remove("WIFI_SSID");
@@ -292,6 +253,46 @@ void startWebServer() {
       ESP.restart();
     });
   }
+
+  /*
+   * These are for debugging purposes
+   */
+
+  /*
+  webServer.on("/read", []() {
+    int *address = (int *) strtol(urlDecode(webServer.arg("address")).c_str(), (char **) '\0', 16);
+    String hex_data = String(((int)(*address) & 0xff), HEX) + " "
+             + String((((int)(*address) >> 8) & 0xff), HEX) + " "
+             + String((((int)(*address) >> 16) & 0xff), HEX) + " "
+             + String((((int)(*address) >> 24) & 0xff), HEX);
+
+    webServer.send(200, "text/html", makePage("Read Memory Test", "<p>" + hex_data));
+  });
+  
+  webServer.on("/write", []() {
+    int *address = (int *) strtol(urlDecode(webServer.arg("address")).c_str(), (char **) '\0', 16);
+    int value = (int) strtol(urlDecode(webServer.arg("value")).c_str(), (char **) '\0', 16);
+    *address=value;
+    webServer.send(200, "text/html", makePage("Write Memory Test", "Writing memory..."));
+  });
+  */
+
+  webServer.on("/setName", []() {
+    const char *name=urlDecode(webServer.arg("name")).c_str();
+    strcpy(projectName, name);
+    webServer.send(200, "text/html", makePage("Test mode", ""));
+  });
+     
+  webServer.on("/getInfo", []() {
+    String s = functionInformation.functionPtr();
+    webServer.send(200, "text/html", makePage("Test mode", s));
+  });
+
+  webServer.on("/test", []() {
+    String s = Test();
+    webServer.send(200, "text/html", makePage("Test mode", s));
+  });
+
   webServer.begin();
 }
 
